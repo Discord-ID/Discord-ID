@@ -5,8 +5,6 @@ import type {
 	SiteContent,
 	UserRole,
 } from "@/lib/content-types";
-import defaultBlogPosts from "@/data/blog-posts.json";
-import defaultSiteContent from "@/data/site-content.json";
 import { db } from "@/lib/db/client";
 import {
 	adminUsersTable,
@@ -116,28 +114,9 @@ function getBootstrapAdminIds() {
 		.filter(Boolean);
 }
 
-async function seedDbFromLocalJson() {
+// seed database with initial admin users from environment variable
+async function seedDb() {
 	const dbClient = getDbOrThrow();
-
-	const [{ count: siteCount }] = await dbClient
-		.select({ count: sql<number>`count(*)` })
-		.from(siteContentTable);
-	if (Number(siteCount) === 0) {
-		await dbClient
-			.insert(siteContentTable)
-			.values(siteContentToRow(defaultSiteContent as SiteContent));
-	}
-
-	const [{ count: postCount }] = await dbClient
-		.select({ count: sql<number>`count(*)` })
-		.from(blogPostsTable);
-	if (Number(postCount) === 0) {
-		const posts = defaultBlogPosts as BlogPost[];
-		if (posts.length > 0) {
-			await dbClient.insert(blogPostsTable).values(posts.map(blogPostToRow));
-		}
-	}
-
 	const bootstrapAdminIds = getBootstrapAdminIds();
 	for (const discordId of bootstrapAdminIds) {
 		await dbClient
@@ -215,7 +194,7 @@ async function ensureDbReady() {
 			await safeRun(sql`
 				ALTER TABLE admin_users ADD COLUMN role TEXT NOT NULL DEFAULT 'moderator'
 			`);
-			await seedDbFromLocalJson();
+			await seedDb();
 		})();
 	}
 
@@ -233,12 +212,13 @@ export async function getSiteContent() {
 		return rowToSiteContent(row);
 	}
 
-	const fallbackSite = defaultSiteContent as SiteContent;
+	// if not present, return empty default and optionally create an empty record
+	const empty: SiteContent = { liveCommunityFeed: [] };
 	await dbClient
 		.insert(siteContentTable)
-		.values(siteContentToRow(fallbackSite))
+		.values(siteContentToRow(empty))
 		.onConflictDoNothing();
-	return fallbackSite;
+	return empty;
 }
 
 export async function updateSiteContent(next: SiteContent) {
@@ -269,18 +249,8 @@ export async function getBlogPosts() {
 		return rows.map(rowToBlogPost);
 	}
 
-	const fallbackPosts = [...(defaultBlogPosts as BlogPost[])].sort(
-		(a, b) =>
-			new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
-	);
-
-	if (fallbackPosts.length > 0) {
-		await dbClient
-			.insert(blogPostsTable)
-			.values(fallbackPosts.map(blogPostToRow));
-	}
-
-	return fallbackPosts;
+	// no posts yet – return empty array
+	return [];
 }
 
 export async function getBlogPostBySlug(slug: string) {
