@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { LiveFeedItem } from "@/lib/content-types";
 
 const pillars = [
 	{
@@ -34,7 +35,7 @@ const pillars = [
 	},
 ];
 
-const feed = [
+const initialFeed: LiveFeedItem[] = [
 	{
 		tag: "UPDATE",
 		color: "#ef4444",
@@ -222,9 +223,19 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 
 export default function Page() {
 	const [widget, setWidget] = useState<WidgetData | null>(null);
+	const [liveFeed, setLiveFeed] = useState<LiveFeedItem[]>(initialFeed);
 	const presenceCount = useCountUp(widget?.presence_count ?? 0);
 
 	useEffect(() => {
+		fetch("/api/public/site-content")
+			.then((response) => response.json())
+			.then((payload) => {
+				if (Array.isArray(payload?.liveCommunityFeed)) {
+					setLiveFeed(payload.liveCommunityFeed);
+				}
+			})
+			.catch(() => {});
+
 		const fetchWidget = () =>
 			fetch("https://discord.com/api/guilds/1419245943999692854/widget.json")
 				.then((r) => r.json())
@@ -283,65 +294,6 @@ export default function Page() {
 						"repeating-linear-gradient(0deg, rgba(255,255,255,0.15) 0px, transparent 1px, transparent 64px)",
 				}}
 			/>
-
-			{/* NAVBAR */}
-			<nav
-				className="relative z-20 border-b"
-				style={{
-					borderColor: "rgba(255,255,255,0.06)",
-					background: "rgba(10,10,11,0.85)",
-					backdropFilter: "blur(16px)",
-				}}
-			>
-				<div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-					<div className="flex items-center gap-2.5">
-						<svg
-							width="24"
-							height="24"
-							viewBox="0 0 127.14 96.36"
-							aria-hidden="true"
-							style={{ fill: "#ef4444" }}
-						>
-							<path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" />
-						</svg>
-						<span
-							style={{
-								fontWeight: 700,
-								fontSize: 16,
-								letterSpacing: "-0.02em",
-							}}
-						>
-							Discord <span style={{ color: "#ef4444" }}>ID</span>
-						</span>
-					</div>
-					<div
-						className="hidden md:flex items-center gap-7"
-						style={{ fontSize: 14 }}
-					>
-						{["Tentang", "Fitur", "Live", "FAQ"].map((n) => (
-							<a key={n} href={`#${n.toLowerCase()}`} className="nav-link">
-								{n}
-							</a>
-						))}
-					</div>
-					<motion.a
-						href={inviteUrl}
-						target="_blank"
-						rel="noreferrer"
-						className="btn-red"
-						style={{
-							padding: "7px 18px",
-							fontSize: 13,
-							fontWeight: 600,
-							letterSpacing: "-0.01em",
-						}}
-						whileHover={{ scale: 1.04 }}
-						whileTap={{ scale: 0.97 }}
-					>
-						Join Sekarang
-					</motion.a>
-				</div>
-			</nav>
 
 			{/* HERO */}
 			<section id="tentang" className="relative z-10 px-6 py-24 md:py-36">
@@ -522,7 +474,7 @@ export default function Page() {
 								animate="show"
 								className="space-y-2.5"
 							>
-								{feed.map((item) => (
+								{liveFeed.map((item) => (
 									<motion.div
 										key={item.text}
 										variants={fadeUp}
@@ -1147,43 +1099,6 @@ export default function Page() {
 					</motion.div>
 				</div>
 			</section>
-
-			{/* FOOTER */}
-			<footer
-				style={{
-					borderTop: "1px solid rgba(255,255,255,0.06)",
-					background: "rgba(255,255,255,0.01)",
-					padding: "24px 24px",
-				}}
-			>
-				<div className="mx-auto max-w-6xl flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-					<div className="flex items-center gap-2.5">
-						<svg
-							width="18"
-							height="18"
-							viewBox="0 0 127.14 96.36"
-							aria-hidden="true"
-							style={{ fill: "#ef4444", opacity: 0.7 }}
-						>
-							<path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" />
-						</svg>
-						<span
-							style={{
-								fontSize: 13,
-								fontWeight: 600,
-								color: "rgba(245,245,247,0.45)",
-							}}
-						>
-							Discord <span style={{ color: "#ef4444" }}>ID</span> ·
-							discord.my.id
-						</span>
-					</div>
-					<p style={{ fontSize: 12, color: "rgba(245,245,247,0.2)" }}>
-						© {new Date().getFullYear()} Discord ID Community — Komunitas
-						Discord Indonesia
-					</p>
-				</div>
-			</footer>
 		</main>
 	);
 }

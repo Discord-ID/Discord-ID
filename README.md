@@ -5,13 +5,13 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, run the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
 bun dev
+```
+
+For linting:
+
+```bash
+bun run lint
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -19,6 +19,64 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Discord Admin Login (OAuth2)
+
+Dashboard and admin API endpoints are protected with Discord OAuth2 via `next-auth`.
+
+1. Copy env template:
+
+```bash
+cp .env.example .env.local
+```
+
+2. Set values in `.env.local`:
+
+- `DISCORD_CLIENT_ID`
+- `DISCORD_CLIENT_SECRET`
+- `NEXTAUTH_SECRET`
+- `DISCORD_ADMIN_IDS` (comma separated Discord user IDs allowed as admin)
+- `TURSO_DATABASE_URL`
+- `TURSO_AUTH_TOKEN`
+
+3. In Discord Developer Portal, add redirect URI:
+
+```text
+http://localhost:3000/api/auth/callback/discord
+```
+
+4. Login from:
+
+```text
+/login
+```
+
+Only IDs listed in `DISCORD_ADMIN_IDS` can sign in and access `/dashboard` plus `/api/admin/*`.
+
+Navbar menampilkan status sesi:
+
+- `Visitor` saat belum login
+- `Admin` saat berhasil login Discord sebagai admin
+- Avatar Discord (jika tersedia) + tombol `Login` / `Logout`
+
+## Turso + Drizzle
+
+Konten situs (`site_content`) dan artikel blog (`blog_posts`) sekarang memakai Turso + Drizzle.
+
+1. Pastikan env Turso sudah diisi (`TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`).
+2. Generate migration/schema metadata:
+
+```bash
+bun run db:generate
+```
+
+3. Push schema ke Turso:
+
+```bash
+bun run db:push
+```
+
+Jika env Turso belum diisi, aplikasi fallback ke penyimpanan JSON lokal di `src/data`.
 
 ## Learn More
 

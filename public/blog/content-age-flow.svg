@@ -1,0 +1,12 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#111218"/>
+  <rect x="80" y="120" width="280" height="120" rx="14" fill="#1c1f29" stroke="#2d3344"/>
+  <rect x="460" y="120" width="280" height="120" rx="14" fill="#1c1f29" stroke="#2d3344"/>
+  <rect x="840" y="120" width="280" height="120" rx="14" fill="#1c1f29" stroke="#2d3344"/>
+  <path d="M360 180H460" stroke="#ef4444" stroke-width="4"/>
+  <path d="M740 180H840" stroke="#ef4444" stroke-width="4"/>
+  <text x="110" y="190" fill="#f5f5f7" font-size="24" font-family="Arial, Helvetica, sans-serif">Join Server</text>
+  <text x="500" y="190" fill="#f5f5f7" font-size="24" font-family="Arial, Helvetica, sans-serif">Verify Info</text>
+  <text x="880" y="190" fill="#f5f5f7" font-size="24" font-family="Arial, Helvetica, sans-serif">Access Channel</text>
+  <text x="80" y="320" fill="#a1a1aa" font-size="26" font-family="Arial, Helvetica, sans-serif">Placeholder diagram untuk isi artikel. Silakan ganti sesuai kebutuhan post.</text>
+</svg>

@@ -6,16 +6,22 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "format": "biome format --write ./src"
+    "lint": "tsc --noEmit && eslint",
+    "format": "biome format --write ./src",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
+    "@libsql/client": "^0.17.0",
     "@remixicon/react": "^4.9.0",
+    "@vercel/analytics": "^1.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.1",
     "motion": "^12.34.3",
     "next": "16.1.6",
+    "next-auth": "^4.24.13",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -29,6 +35,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.9",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
@@ -39,6 +46,8 @@
     "unrs-resolver"
   ],
   "trustedDependencies": [
+    "esbuild",
+    "msw",
     "sharp",
     "unrs-resolver"
   ]
