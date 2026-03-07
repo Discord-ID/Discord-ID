@@ -413,7 +413,7 @@ export default function Page() {
 										Join Discord
 									</motion.a>
 								</Button>
-								<Button
+								{/* <Button
 									size="lg"
 									variant="outline"
 									style={{
@@ -430,7 +430,7 @@ export default function Page() {
 									>
 										Kunjungi Website ↗
 									</a>
-								</Button>
+								</Button> */}
 							</motion.div>
 						</motion.div>
 
@@ -1079,7 +1079,7 @@ export default function Page() {
 							>
 								Join Community
 							</motion.a>
-							<a
+							{/* <a
 								href="https://discord.my.id"
 								target="_blank"
 								rel="noreferrer"
@@ -1094,7 +1094,7 @@ export default function Page() {
 								}}
 							>
 								discord.my.id ↗
-							</a>
+							</a> */}
 						</div>
 					</motion.div>
 				</div>

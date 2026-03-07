@@ -152,9 +152,28 @@ export async function generateMetadata({
 		return { title: "Post tidak ditemukan | Discord ID Blog" };
 	}
 
+	const imageUrl = post.coverImage?.src ?? "/discord-id.svg";
+
 	return {
 		title: `${post.title} | Discord ID Blog`,
 		description: post.excerpt,
+		openGraph: {
+			title: `${post.title} | Discord ID Blog`,
+			description: post.excerpt,
+			type: "article",
+			images: [
+				{
+					url: imageUrl,
+					alt: post.coverImage?.alt ?? post.title,
+				},
+			],
+		},
+		twitter: {
+			card: "summary_large_image",
+			title: `${post.title} | Discord ID Blog`,
+			description: post.excerpt,
+			images: [imageUrl],
+		},
 	};
 }
 

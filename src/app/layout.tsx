@@ -74,7 +74,7 @@ export default function RootLayout({
 			>
 				<AppSessionProvider>
 					<Navbar />
-					<div style={{ paddingTop: 84 }}>{children}</div>
+					<div className="pt-[116px] md:pt-[84px]">{children}</div>
 					<Footer />
 					<Analytics />
 				</AppSessionProvider>
