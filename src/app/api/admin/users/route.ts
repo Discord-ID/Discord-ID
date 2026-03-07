@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import type { UserRole } from "@/lib/content-types";
 import { authOptions } from "@/lib/auth";
+import { discordLog } from "@/lib/discord-logger";
 import {
 	listPrivilegedUsers,
 	upsertPrivilegedUserByAdmin,
@@ -70,7 +71,9 @@ export async function POST(request: Request) {
 			role: payload.role,
 			name: payload.name,
 		});
-
+		await discordLog(
+			`USER_MODIFIED by ${auth.session?.user?.id || "?"}: ${user.discordId} role=${user.role}`,
+		);
 		return NextResponse.json(user);
 	} catch {
 		return NextResponse.json(

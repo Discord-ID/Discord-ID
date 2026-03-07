@@ -205,7 +205,18 @@ export function Navbar() {
 								{session.role === "admin" || session.role === "moderator" ? (
 									<DropdownMenuSeparator />
 								) : null}
-								<DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+								<DropdownMenuItem
+									onClick={async () => {
+										try {
+											await fetch("/api/log", {
+												method: "POST",
+												headers: { "Content-Type": "application/json" },
+												body: JSON.stringify({ action: "logout" }),
+											});
+										} catch {}
+										signOut({ callbackUrl: "/" });
+									}}
+								>
 									Logout
 								</DropdownMenuItem>
 							</DropdownMenuContent>

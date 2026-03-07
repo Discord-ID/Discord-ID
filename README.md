@@ -36,6 +36,7 @@ cp .env.example .env.local
 - `DISCORD_CLIENT_SECRET`
 - `NEXTAUTH_SECRET`
 - `DISCORD_ADMIN_IDS` (comma separated Discord user IDs allowed as admin)
+- `DISCORD_STATE_API_BASE_URL`
 - `TURSO_DATABASE_URL`
 - `TURSO_AUTH_TOKEN`
 

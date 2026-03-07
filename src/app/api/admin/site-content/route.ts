@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import type { SiteContent } from "@/lib/content-types";
 import { authOptions } from "@/lib/auth";
+import { discordLog } from "@/lib/discord-logger";
 import { getSiteContent, updateSiteContent } from "@/lib/content-store";
 
 export const runtime = "nodejs";
@@ -59,6 +60,9 @@ export async function PUT(request: Request) {
 			);
 		}
 		const updated = await updateSiteContent(payload);
+		const session = await getServerSession(authOptions);
+		const userId = session?.user?.id ?? "?";
+		await discordLog(`SITE_CONTENT_UPDATE by ${userId}`);
 		return NextResponse.json(updated);
 	} catch {
 		return NextResponse.json(

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { discordLog } from "@/lib/discord-logger";
 import {
 	getAdminProfileByDiscordId,
 	resetPrivilegedUserNameToDefault,
@@ -63,6 +64,9 @@ export async function PATCH(request: Request) {
 			const reset = await resetPrivilegedUserNameToDefault(
 				auth.session.user.id,
 			);
+			await discordLog(
+				`USER_SETTINGS: ${auth.session.user.id} reset name to default`,
+			);
 			return NextResponse.json(reset);
 		}
 
@@ -78,6 +82,9 @@ export async function PATCH(request: Request) {
 		const updated = await updatePrivilegedUserName(
 			auth.session.user.id,
 			nextName,
+		);
+		await discordLog(
+			`USER_SETTINGS: ${auth.session.user.id} changed name to ${nextName}`,
 		);
 		return NextResponse.json(updated);
 	} catch {

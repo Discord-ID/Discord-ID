@@ -1,6 +1,7 @@
 import type { NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import type { UserRole } from "@/lib/content-types";
+import { discordLog } from "@/lib/discord-logger";
 import {
 	getAdminProfileByDiscordId,
 	getUserRoleByDiscordId,
@@ -85,6 +86,11 @@ export const authOptions: NextAuthOptions = {
 					});
 				} catch {}
 			}
+
+			// record login event
+			await discordLog(
+				`LOGIN: ${user.name || "?"} (${discordId}) role=${role}`,
+			);
 
 			return Boolean(role);
 		},

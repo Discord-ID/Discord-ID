@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import type { BlogPost } from "@/lib/content-types";
 import { authOptions } from "@/lib/auth";
+import { discordLog } from "@/lib/discord-logger";
 import { getBlogPosts, updateBlogPosts } from "@/lib/content-store";
 
 export const runtime = "nodejs";
@@ -85,7 +86,24 @@ export async function PUT(request: Request) {
 			}
 		}
 
+		const before = await getBlogPosts();
 		const updated = await updateBlogPosts(payload);
+
+		const added = updated.filter(
+			(post) => !before.find((prev) => prev.slug === post.slug),
+		);
+		const removed = before.filter(
+			(prev) => !updated.find((post) => post.slug === prev.slug),
+		);
+		const statusChanged = updated.filter((post) => {
+			const old = before.find((prev) => prev.slug === post.slug);
+			return old && old.status !== post.status;
+		});
+
+		await discordLog(
+			`BLOG_UPDATE: ${auth.session?.user?.id || "?"} added=${added.map((x) => x.slug).join(",")} removed=${removed.map((x) => x.slug).join(",")} status=${statusChanged.map((x) => `${x.slug}:${x.status}`).join(",")}`,
+		);
+
 		return NextResponse.json(updated);
 	} catch {
 		return NextResponse.json(

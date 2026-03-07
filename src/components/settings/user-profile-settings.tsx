@@ -138,7 +138,16 @@ export function UserProfileSettings() {
 					</div>
 					<button
 						type="button"
-						onClick={() => signOut({ callbackUrl: "/" })}
+						onClick={async () => {
+							try {
+								await fetch("/api/log", {
+									method: "POST",
+									headers: { "Content-Type": "application/json" },
+									body: JSON.stringify({ action: "logout" }),
+								});
+							} catch {}
+							signOut({ callbackUrl: "/" });
+						}}
 						className="btn-red"
 						style={{ padding: "6px 10px", fontSize: 12, fontWeight: 700 }}
 					>
