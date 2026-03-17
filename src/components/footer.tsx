@@ -37,10 +37,21 @@ export function Footer() {
 						· discord.my.id
 					</span>
 				</div>
-				<p style={{ fontSize: 12, color: "rgba(245,245,247,0.2)" }}>
-					© {new Date().getFullYear()} Discord ID Community — Komunitas Discord
-					Indonesia
-				</p>
+				<div
+					style={{
+						fontSize: 12,
+						color: "rgba(245,245,247,0.2)",
+						textAlign: "right",
+					}}
+				>
+					<p>
+						© {new Date().getFullYear()} Discord ID Community — Komunitas Discord
+						Indonesia
+					</p>
+					<p style={{ fontSize: 11, color: "rgba(245,245,247,0.35)" }}>
+						This community server is not affiliated with Discord Inc.
+					</p>
+				</div>
 			</div>
 		</footer>
 	);
