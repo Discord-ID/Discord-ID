@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import Image from "next/image";
 import type { BlogContentBlock, BlogPost } from "@/lib/content-types";
 import {
@@ -100,7 +100,7 @@ function PreviewModal({
 							margin: 0,
 						}}
 					>
-						“{block.text}”
+						"{block.text}"
 					</p>
 					{block.cite ? (
 						<cite
@@ -219,7 +219,7 @@ function PreviewModal({
 	);
 }
 
-function PostEditor({
+const PostEditor = memo(function PostEditor({
 	post,
 	currentAdmin,
 	canDeletePost,
@@ -586,7 +586,7 @@ function PostEditor({
 			</div>
 		</div>
 	);
-}
+});
 
 export function BlogPostManager({
 	posts,
@@ -655,6 +655,23 @@ export function BlogPostManager({
 		onChange(nextPosts);
 		setSelectedIndex(Math.max(0, index - 1));
 	}
+
+	const handlePostChange = useCallback(
+		(updatedPost: BlogPost) => {
+			setPostAt(selectedEntryIndex, updatedPost);
+		},
+		[selectedEntryIndex, posts],
+	);
+
+	const handleDelete = useCallback(() => {
+		if (canDeletePost) {
+			deletePostByIndex(selectedEntryIndex);
+		}
+	}, [canDeletePost, selectedEntryIndex, posts]);
+
+	const handlePreview = useCallback(() => {
+		setPreviewPost(selectedPost);
+	}, [selectedPost]);
 
 	return (
 		<SectionCard
@@ -747,15 +764,9 @@ export function BlogPostManager({
 							post={selectedPost}
 							currentAdmin={currentAdmin}
 							canDeletePost={canDeletePost}
-							onChange={(updatedPost) =>
-								setPostAt(selectedEntryIndex, updatedPost)
-							}
-							onDelete={() =>
-								canDeletePost
-									? deletePostByIndex(selectedEntryIndex)
-									: undefined
-							}
-							onPreview={() => setPreviewPost(selectedPost)}
+							onChange={handlePostChange}
+							onDelete={handleDelete}
+							onPreview={handlePreview}
 						/>
 					) : (
 						<div
