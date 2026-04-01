@@ -25,7 +25,7 @@ function normalizeSlugInput(value: string) {
 		.replace(/[^a-z0-9\s-]/g, "")
 		.replace(/\s+/g, "-")
 		.replace(/-+/g, "-")
-		.replace(/^-|-$/g, "");
+		.replace(/^-/, "");
 }
 
 function PreviewModal({

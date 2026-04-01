@@ -61,8 +61,18 @@ export function DashboardEditor() {
 	async function savePosts() {
 		try {
 			setStatus("Menyimpan blog posts...");
+			const normalizeSlugForSave = (value: string) =>
+				value
+					.toLowerCase()
+					.replace(/[^a-z0-9\s-]/g, "")
+					.replace(/\s+/g, "-")
+					.replace(/-+/g, "-")
+					.replace(/^-+/, "")
+					.replace(/-+$/, "");
+
 			const payload = posts.map((post) => ({
 				...post,
+				slug: normalizeSlugForSave(post.slug),
 				status: post.status === "draft" ? "draft" : "published",
 				authorAdminId: post.authorAdminId?.trim() || undefined,
 				tags: post.tags.map((tag) => tag.trim()).filter(Boolean),
