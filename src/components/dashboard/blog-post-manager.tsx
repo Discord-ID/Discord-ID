@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import type { BlogContentBlock, BlogPost } from "@/lib/content-types";
 import {
@@ -656,22 +656,26 @@ export function BlogPostManager({
 		setSelectedIndex(Math.max(0, index - 1));
 	}
 
-	const handlePostChange = useCallback(
-		(updatedPost: BlogPost) => {
-			setPostAt(selectedEntryIndex, updatedPost);
-		},
-		[selectedEntryIndex, posts],
-	);
+	const stableRef = useRef({ selectedEntryIndex, posts, canDeletePost, selectedPost });
+	stableRef.current = { selectedEntryIndex, posts, canDeletePost, selectedPost };
+
+	const handlePostChange = useCallback((updatedPost: BlogPost) => {
+		const { selectedEntryIndex, posts } = stableRef.current;
+		onChange(
+			posts.map((post, i) => (i === selectedEntryIndex ? updatedPost : post)),
+		);
+	}, [onChange]);
 
 	const handleDelete = useCallback(() => {
-		if (canDeletePost) {
-			deletePostByIndex(selectedEntryIndex);
-		}
-	}, [canDeletePost, selectedEntryIndex, posts]);
+		const { canDeletePost, selectedEntryIndex, posts } = stableRef.current;
+		if (!canDeletePost) return;
+		onChange(posts.filter((_, i) => i !== selectedEntryIndex));
+		setSelectedIndex(Math.max(0, selectedEntryIndex - 1));
+	}, [onChange]);
 
 	const handlePreview = useCallback(() => {
-		setPreviewPost(selectedPost);
-	}, [selectedPost]);
+		setPreviewPost(stableRef.current.selectedPost);
+	}, []);
 
 	return (
 		<SectionCard
