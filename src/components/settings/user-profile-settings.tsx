@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
+import { signOut, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import type { AdminProfile } from "@/lib/content-types";
 
 export function UserProfileSettings() {

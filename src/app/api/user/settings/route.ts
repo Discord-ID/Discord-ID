@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { discordLog } from "@/lib/discord-logger";
 import {
 	getAdminProfileByDiscordId,
 	resetPrivilegedUserNameToDefault,
 	updatePrivilegedUserName,
 } from "@/lib/content-store";
+import { discordLog } from "@/lib/discord-logger";
 
 export const runtime = "nodejs";
 
@@ -19,7 +19,11 @@ async function requirePrivilegedUser() {
 		};
 	}
 
-	if (session.role !== "admin" && session.role !== "moderator") {
+	if (
+		session.role !== "dev" &&
+		session.role !== "admin" &&
+		session.role !== "moderator"
+	) {
 		return {
 			error: NextResponse.json({ message: "Forbidden" }, { status: 403 }),
 			session: null,

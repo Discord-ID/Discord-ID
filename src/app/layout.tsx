@@ -1,9 +1,9 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Outfit } from "next/font/google";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { AppSessionProvider } from "@/components/session-provider";
-import { Analytics } from "@vercel/analytics/next";
 
 import "./globals.css";
 
@@ -27,11 +27,11 @@ export const metadata: Metadata = {
 	},
 	description:
 		"Komunitas Discord Indonesia untuk update, quests, mabar, dan developer discussion.",
-	icons: {
-		icon: "/discord-id.svg",
-		shortcut: "/discord-id.svg",
-		apple: "/discord-id.svg",
-	},
+	// icons: {
+	// 	icon: "/discord-id.svg",
+	// 	shortcut: "/discord-id.svg",
+	// 	apple: "/discord-id.svg",
+	// },
 	openGraph: {
 		title: "Discord ID Community",
 		description:

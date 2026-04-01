@@ -1,13 +1,13 @@
-import type {
-	AdminProfile,
-	BlogContentBlock,
-	BlogPost,
-} from "@/lib/content-types";
 import {
 	getAdminProfilesByDiscordIds,
 	getBlogPostBySlug,
 	getBlogPosts,
 } from "@/lib/content-store";
+import type {
+	AdminProfile,
+	BlogContentBlock,
+	BlogPost,
+} from "@/lib/content-types";
 
 export type { AdminProfile, BlogContentBlock, BlogPost };
 

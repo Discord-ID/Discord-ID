@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import type { BlogPost } from "@/lib/content-types";
 import { authOptions } from "@/lib/auth";
-import { discordLog } from "@/lib/discord-logger";
 import { getBlogPosts, updateBlogPosts } from "@/lib/content-store";
+import type { BlogPost } from "@/lib/content-types";
+import { discordLog } from "@/lib/discord-logger";
 
 export const runtime = "nodejs";
 
@@ -16,7 +16,11 @@ async function requireEditor() {
 		};
 	}
 
-	if (session.role !== "admin" && session.role !== "moderator") {
+	if (
+		session.role !== "dev" &&
+		session.role !== "admin" &&
+		session.role !== "moderator"
+	) {
 		return {
 			error: NextResponse.json({ message: "Forbidden" }, { status: 403 }),
 			session: null,

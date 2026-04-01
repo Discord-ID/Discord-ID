@@ -1,8 +1,8 @@
-import { memo, useCallback, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import type { BlogContentBlock, BlogPost } from "@/lib/content-types";
 import {
-	blockStableKey,
+	createBlogBlockId,
 	emptyPost,
 	itemsToText,
 	newBlock,
@@ -100,7 +100,7 @@ function PreviewModal({
 							margin: 0,
 						}}
 					>
-						"{block.text}"
+						&quot;{block.text}&quot;
 					</p>
 					{block.cite ? (
 						<cite
@@ -207,8 +207,8 @@ function PreviewModal({
 					</p>
 
 					<div className="mt-4 space-y-4">
-						{post.content.map((block, index) => (
-							<div key={`preview-${blockStableKey(block)}-${index}`}>
+						{post.content.map((block) => (
+							<div key={block.id ?? createBlogBlockId()}>
 								{renderPreviewBlock(block)}
 							</div>
 						))}
@@ -428,7 +428,7 @@ const PostEditor = memo(function PostEditor({
 				<div className="space-y-3">
 					{post.content.map((block, blockIndex) => (
 						<div
-							key={`block-${blockStableKey(block)}`}
+							key={block.id ?? createBlogBlockId()}
 							style={{
 								border: "1px solid rgba(255,255,255,0.08)",
 								borderRadius: 10,
@@ -605,6 +605,18 @@ export function BlogPostManager({
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [previewPost, setPreviewPost] = useState<BlogPost | null>(null);
 
+	useEffect(() => {
+		if (!posts.some((post) => post.content.some((block) => !block.id))) return;
+		onChange(
+			posts.map((post) => ({
+				...post,
+				content: post.content.map((block) =>
+					block.id ? block : { ...block, id: createBlogBlockId() },
+				),
+			})),
+		);
+	}, [onChange, posts]);
+
 	const filteredEntries = useMemo(() => {
 		const entries = posts.map((post, index) => ({ post, index }));
 
@@ -627,14 +639,6 @@ export function BlogPostManager({
 	const selectedPost = selectedEntry?.post ?? null;
 	const selectedEntryIndex = selectedEntry?.index ?? 0;
 
-	function setPostAt(index: number, nextPost: BlogPost) {
-		onChange(
-			posts.map((post, currentIndex) =>
-				currentIndex === index ? nextPost : post,
-			),
-		);
-	}
-
 	function createPost() {
 		const nextPosts = [
 			...posts,
@@ -650,32 +654,24 @@ export function BlogPostManager({
 		setSelectedIndex(nextPosts.length - 1);
 	}
 
-	function deletePostByIndex(index: number) {
-		const nextPosts = posts.filter((_, currentIndex) => currentIndex !== index);
-		onChange(nextPosts);
-		setSelectedIndex(Math.max(0, index - 1));
-	}
-
-	const stableRef = useRef({ selectedEntryIndex, posts, canDeletePost, selectedPost });
-	stableRef.current = { selectedEntryIndex, posts, canDeletePost, selectedPost };
-
-	const handlePostChange = useCallback((updatedPost: BlogPost) => {
-		const { selectedEntryIndex, posts } = stableRef.current;
-		onChange(
-			posts.map((post, i) => (i === selectedEntryIndex ? updatedPost : post)),
-		);
-	}, [onChange]);
+	const handlePostChange = useCallback(
+		(updatedPost: BlogPost) => {
+			onChange(
+				posts.map((post, i) => (i === selectedEntryIndex ? updatedPost : post)),
+			);
+		},
+		[onChange, posts, selectedEntryIndex],
+	);
 
 	const handleDelete = useCallback(() => {
-		const { canDeletePost, selectedEntryIndex, posts } = stableRef.current;
 		if (!canDeletePost) return;
 		onChange(posts.filter((_, i) => i !== selectedEntryIndex));
 		setSelectedIndex(Math.max(0, selectedEntryIndex - 1));
-	}, [onChange]);
+	}, [canDeletePost, onChange, posts, selectedEntryIndex]);
 
 	const handlePreview = useCallback(() => {
-		setPreviewPost(stableRef.current.selectedPost);
-	}, []);
+		setPreviewPost(selectedPost);
+	}, [selectedPost]);
 
 	return (
 		<SectionCard

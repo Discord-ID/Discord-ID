@@ -4,6 +4,26 @@ import type {
 	LiveFeedItem,
 } from "@/lib/content-types";
 
+export function createBlogBlockId() {
+	if (
+		typeof crypto !== "undefined" &&
+		typeof crypto.randomUUID === "function"
+	) {
+		return crypto.randomUUID();
+	}
+	return `block-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+export function createLiveFeedItemId() {
+	if (
+		typeof crypto !== "undefined" &&
+		typeof crypto.randomUUID === "function"
+	) {
+		return crypto.randomUUID();
+	}
+	return `feed-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function reorderArray<T>(
 	items: T[],
 	fromIndex: number,
@@ -16,7 +36,7 @@ export function reorderArray<T>(
 }
 
 export function emptyFeedItem(): LiveFeedItem {
-	return { tag: "", color: "#ef4444", text: "" };
+	return { id: createLiveFeedItemId(), tag: "", color: "#ef4444", text: "" };
 }
 
 export function emptyPost(): BlogPost {
@@ -29,16 +49,18 @@ export function emptyPost(): BlogPost {
 		tags: [],
 		coverImage: { src: "", alt: "" },
 		sourceUrl: "",
-		content: [{ type: "paragraph", text: "" }],
+		content: [{ id: createBlogBlockId(), type: "paragraph", text: "" }],
 	};
 }
 
 export function newBlock(type: BlogContentBlock["type"]): BlogContentBlock {
-	if (type === "heading") return { type: "heading", text: "" };
-	if (type === "paragraph") return { type: "paragraph", text: "" };
-	if (type === "image") return { type: "image", src: "", alt: "", caption: "" };
-	if (type === "quote") return { type: "quote", text: "", cite: "" };
-	return { type: "list", ordered: false, items: [""] };
+	const id = createBlogBlockId();
+	if (type === "heading") return { id, type: "heading", text: "" };
+	if (type === "paragraph") return { id, type: "paragraph", text: "" };
+	if (type === "image")
+		return { id, type: "image", src: "", alt: "", caption: "" };
+	if (type === "quote") return { id, type: "quote", text: "", cite: "" };
+	return { id, type: "list", ordered: false, items: [""] };
 }
 
 export function parseItems(value: string) {
@@ -50,22 +72,6 @@ export function parseItems(value: string) {
 
 export function itemsToText(items: string[]) {
 	return items.join("\n");
-}
-
-export function blockStableKey(block: BlogContentBlock) {
-	if (block.type === "heading" || block.type === "paragraph") {
-		return `${block.type}-${block.text}`;
-	}
-
-	if (block.type === "image") {
-		return `${block.type}-${block.src}-${block.alt}-${block.caption ?? ""}`;
-	}
-
-	if (block.type === "quote") {
-		return `${block.type}-${block.text}-${block.cite ?? ""}`;
-	}
-
-	return `${block.type}-${block.ordered ? "ordered" : "unordered"}-${block.items.join("|")}`;
 }
 
 export function postLabel(post: BlogPost, index: number) {

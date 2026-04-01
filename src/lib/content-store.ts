@@ -97,11 +97,14 @@ function rowToAdminProfile(row: {
 	avatarUrl: string | null;
 	updatedAt: Date;
 }): AdminProfile {
+	const role =
+		row.role === "dev" ? "dev" : row.role === "admin" ? "admin" : "moderator";
+
 	return {
 		discordId: row.discordId,
 		name: row.name,
 		defaultDisplayName: row.discordDisplayName ?? undefined,
-		role: row.role === "admin" ? "admin" : "moderator",
+		role,
 		avatarUrl: row.avatarUrl ?? undefined,
 		updatedAt: row.updatedAt.toISOString(),
 	};
@@ -114,9 +117,37 @@ function getBootstrapAdminIds() {
 		.filter(Boolean);
 }
 
+function getBootstrapDevIds() {
+	return (process.env.DISCORD_DEV_IDS ?? "")
+		.split(",")
+		.map((id) => id.trim())
+		.filter(Boolean);
+}
+
 // seed database with initial admin users from environment variable
 async function seedDb() {
 	const dbClient = getDbOrThrow();
+	const bootstrapDevIds = getBootstrapDevIds();
+	for (const discordId of bootstrapDevIds) {
+		await dbClient
+			.insert(adminUsersTable)
+			.values({
+				discordId,
+				name: `Dev ${discordId}`,
+				discordDisplayName: null,
+				role: "dev",
+				avatarUrl: null,
+				updatedAt: new Date(),
+			})
+			.onConflictDoUpdate({
+				target: adminUsersTable.discordId,
+				set: {
+					role: "dev",
+					updatedAt: new Date(),
+				},
+			});
+	}
+
 	const bootstrapAdminIds = getBootstrapAdminIds();
 	for (const discordId of bootstrapAdminIds) {
 		await dbClient
@@ -279,7 +310,12 @@ export async function upsertAdminProfile(profile: {
 		where: eq(adminUsersTable.discordId, profile.discordId),
 	});
 
-	const role = existing?.role === "admin" ? "admin" : "moderator";
+	const role =
+		existing?.role === "dev"
+			? "dev"
+			: existing?.role === "admin"
+				? "admin"
+				: "moderator";
 	const previousDiscordName = existing?.discordDisplayName ?? null;
 	const shouldKeepCustomName =
 		Boolean(existing?.name) &&
@@ -322,7 +358,11 @@ export async function getUserRoleByDiscordId(discordId: string) {
 		return null;
 	}
 
-	return row.role === "admin" ? "admin" : "moderator";
+	return row.role === "dev"
+		? "dev"
+		: row.role === "admin"
+			? "admin"
+			: "moderator";
 }
 
 export async function getAdminProfileByDiscordId(discordId: string) {
@@ -427,6 +467,25 @@ export async function updatePrivilegedUserName(
 		.where(eq(adminUsersTable.discordId, discordId));
 
 	return getAdminProfileByDiscordId(discordId);
+}
+
+export async function deletePrivilegedUserByDiscordId(discordId: string) {
+	const dbClient = getDbOrThrow();
+	await ensureDbReady();
+
+	const existing = await dbClient.query.adminUsersTable.findFirst({
+		where: eq(adminUsersTable.discordId, discordId),
+	});
+
+	if (!existing) {
+		return null;
+	}
+
+	await dbClient
+		.delete(adminUsersTable)
+		.where(eq(adminUsersTable.discordId, discordId));
+
+	return rowToAdminProfile(existing);
 }
 
 export async function resetPrivilegedUserNameToDefault(discordId: string) {

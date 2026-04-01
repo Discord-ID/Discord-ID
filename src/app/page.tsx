@@ -474,9 +474,9 @@ export default function Page() {
 								animate="show"
 								className="space-y-2.5"
 							>
-								{liveFeed.map((item) => (
+								{liveFeed.map((item, index) => (
 									<motion.div
-										key={item.text}
+										key={item.id ?? `${item.text}-${index}`}
 										variants={fadeUp}
 										style={{
 											display: "flex",

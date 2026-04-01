@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import type { SiteContent } from "@/lib/content-types";
 import { authOptions } from "@/lib/auth";
-import { discordLog } from "@/lib/discord-logger";
 import { getSiteContent, updateSiteContent } from "@/lib/content-store";
+import type { SiteContent } from "@/lib/content-types";
+import { discordLog } from "@/lib/discord-logger";
 
 export const runtime = "nodejs";
 
@@ -13,7 +13,11 @@ async function requireEditor() {
 		return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 	}
 
-	if (session.role !== "admin" && session.role !== "moderator") {
+	if (
+		session.role !== "dev" &&
+		session.role !== "admin" &&
+		session.role !== "moderator"
+	) {
 		return NextResponse.json({ message: "Forbidden" }, { status: 403 });
 	}
 

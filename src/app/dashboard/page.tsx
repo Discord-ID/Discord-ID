@@ -1,5 +1,5 @@
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
 import { DashboardEditor } from "@/components/dashboard-editor";
 import { authOptions } from "@/lib/auth";
 
@@ -10,7 +10,11 @@ export default async function DashboardPage() {
 		redirect("/login?callbackUrl=/dashboard");
 	}
 
-	if (session.role !== "admin" && session.role !== "moderator") {
+	if (
+		session.role !== "dev" &&
+		session.role !== "admin" &&
+		session.role !== "moderator"
+	) {
 		redirect("/login?error=NotAdmin");
 	}
 

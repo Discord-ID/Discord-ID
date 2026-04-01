@@ -1,15 +1,22 @@
 import type { NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
-import type { UserRole } from "@/lib/content-types";
-import { discordLog } from "@/lib/discord-logger";
 import {
 	getAdminProfileByDiscordId,
 	getUserRoleByDiscordId,
 	upsertAdminProfile,
 } from "@/lib/content-store";
+import type { UserRole } from "@/lib/content-types";
+import { discordLog } from "@/lib/discord-logger";
 
 function getAdminDiscordIds() {
 	return (process.env.DISCORD_ADMIN_IDS ?? "")
+		.split(",")
+		.map((id) => id.trim())
+		.filter(Boolean);
+}
+
+function getDevDiscordIds() {
+	return (process.env.DISCORD_DEV_IDS ?? "")
 		.split(",")
 		.map((id) => id.trim())
 		.filter(Boolean);
@@ -21,10 +28,20 @@ export function isAdminDiscordId(discordId?: string | null) {
 	return adminIds.includes(discordId);
 }
 
+export function isDevDiscordId(discordId?: string | null) {
+	if (!discordId) return false;
+	const devIds = getDevDiscordIds();
+	return devIds.includes(discordId);
+}
+
 async function resolveUserRole(
 	discordId?: string | null,
 ): Promise<UserRole | null> {
 	if (!discordId) return null;
+
+	if (isDevDiscordId(discordId)) {
+		return "dev";
+	}
 
 	if (isAdminDiscordId(discordId)) {
 		return "admin";
@@ -102,7 +119,7 @@ export const authOptions: NextAuthOptions = {
 			if (typeof token.discordId === "string") {
 				const role = await resolveUserRole(token.discordId);
 				token.role = role ?? undefined;
-				token.isAdmin = role === "admin";
+				token.isAdmin = role === "admin" || role === "dev";
 			} else {
 				token.isAdmin = false;
 				token.role = undefined;
@@ -114,7 +131,9 @@ export const authOptions: NextAuthOptions = {
 			const discordId =
 				typeof token.discordId === "string" ? token.discordId : undefined;
 			const role =
-				token.role === "admin" || token.role === "moderator"
+				token.role === "dev" ||
+				token.role === "admin" ||
+				token.role === "moderator"
 					? token.role
 					: undefined;
 			const isAdmin = Boolean(token.isAdmin);

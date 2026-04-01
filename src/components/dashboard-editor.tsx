@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { BlogPostManager } from "@/components/dashboard/blog-post-manager";
-import { UserAccessManager } from "@/components/dashboard/user-access-manager";
 import { LiveFeedEditor } from "@/components/dashboard/live-feed-editor";
+import { UserAccessManager } from "@/components/dashboard/user-access-manager";
 import type { BlogPost, LiveFeedItem, SiteContent } from "@/lib/content-types";
 
 export function DashboardEditor() {
@@ -152,14 +152,17 @@ export function DashboardEditor() {
 					posts={posts}
 					onChange={setPosts}
 					onSave={savePosts}
-					canDeletePost={session?.role === "admin"}
+					canDeletePost={session?.role === "admin" || session?.role === "dev"}
 					currentAdmin={{
 						discordId: session?.user?.id,
 						name: session?.user?.name,
 						avatarUrl: session?.user?.image,
 					}}
 				/>
-				<UserAccessManager role={session?.role} />
+				<UserAccessManager
+					role={session?.role}
+					currentUserId={session?.user?.id}
+				/>
 			</div>
 		</main>
 	);

@@ -30,6 +30,7 @@ import {
 	RiTranslate,
 	RiUserLine,
 } from "@remixicon/react";
+import Image from "next/image";
 import * as React from "react";
 import { Example, ExampleWrapper } from "@/components/example";
 import {
@@ -91,7 +92,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import Image from "next/image";
 
 export function ComponentExample() {
 	return (

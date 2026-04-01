@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import type { LiveFeedItem } from "@/lib/content-types";
-import { emptyFeedItem, reorderArray } from "./helpers";
+import { createLiveFeedItemId, emptyFeedItem, reorderArray } from "./helpers";
 import { Input, SectionCard, SmallButton, Textarea } from "./ui";
 
 export function LiveFeedEditor({
@@ -11,6 +12,15 @@ export function LiveFeedEditor({
 	onChange: (items: LiveFeedItem[]) => void;
 	onSave: () => void;
 }) {
+	useEffect(() => {
+		if (!feedItems.some((item) => !item.id)) return;
+		onChange(
+			feedItems.map((item) =>
+				item.id ? item : { ...item, id: createLiveFeedItemId() },
+			),
+		);
+	}, [feedItems, onChange]);
+
 	function updateFeed(index: number, patch: Partial<LiveFeedItem>) {
 		const next = [...feedItems];
 		next[index] = { ...next[index], ...patch };
@@ -46,7 +56,7 @@ export function LiveFeedEditor({
 			<div className="space-y-3">
 				{feedItems.map((item, index) => (
 					<div
-						key={`feed-${item.tag}-${item.text}-${item.color}`}
+						key={item.id ?? `feed-legacy-${index}`}
 						style={{
 							border: "1px solid rgba(255,255,255,0.08)",
 							borderRadius: 12,
