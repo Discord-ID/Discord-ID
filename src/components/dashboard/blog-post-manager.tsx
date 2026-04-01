@@ -19,6 +19,15 @@ type CurrentAdmin = {
 
 type PostFilter = "all" | "published" | "draft";
 
+function normalizeSlugInput(value: string) {
+	return value
+		.toLowerCase()
+		.replace(/[^a-z0-9\s-]/g, "")
+		.replace(/\s+/g, "-")
+		.replace(/-+/g, "-")
+		.replace(/^-|-$/g, "");
+}
+
 function PreviewModal({
 	post,
 	onClose,
@@ -42,6 +51,7 @@ function PreviewModal({
 						fontSize: 14,
 						lineHeight: 1.8,
 						color: "rgba(245,245,247,0.74)",
+						whiteSpace: "pre-wrap",
 					}}
 				>
 					{block.text}
@@ -98,6 +108,7 @@ function PreviewModal({
 							lineHeight: 1.75,
 							color: "rgba(245,245,247,0.85)",
 							margin: 0,
+							whiteSpace: "pre-wrap",
 						}}
 					>
 						&quot;{block.text}&quot;
@@ -116,6 +127,46 @@ function PreviewModal({
 						</cite>
 					) : null}
 				</blockquote>
+			);
+		}
+
+		if (block.type === "code") {
+			return (
+				<div
+					style={{
+						margin: 0,
+						borderRadius: 10,
+						border: "1px solid rgba(255,255,255,0.1)",
+						background: "rgba(0,0,0,0.35)",
+						overflow: "hidden",
+					}}
+				>
+					<div
+						style={{
+							padding: "8px 10px",
+							fontSize: 12,
+							fontWeight: 700,
+							color: "rgba(245,245,247,0.55)",
+							borderBottom: "1px solid rgba(255,255,255,0.08)",
+							textTransform: "lowercase",
+						}}
+					>
+						{block.language || "text"}
+					</div>
+					<pre
+						style={{
+							margin: 0,
+							padding: "12px 14px",
+							fontSize: 13,
+							lineHeight: 1.65,
+							color: "#f5f5f7",
+							whiteSpace: "pre-wrap",
+							overflowX: "auto",
+						}}
+					>
+						<code>{block.code}</code>
+					</pre>
+				</div>
 			);
 		}
 
@@ -293,7 +344,9 @@ const PostEditor = memo(function PostEditor({
 				<Input
 					placeholder="Slug"
 					value={post.slug}
-					onChange={(event) => updatePost({ slug: event.target.value })}
+					onChange={(event) =>
+						updatePost({ slug: normalizeSlugInput(event.target.value) })
+					}
 					style={{ gridColumn: "1 / -1" }}
 				/>
 				<Input
@@ -334,13 +387,10 @@ const PostEditor = memo(function PostEditor({
 				</SmallButton>
 				<Input
 					placeholder="Tags (pisah koma)"
-					value={post.tags.join(", ")}
+					value={post.tags.join(",")}
 					onChange={(event) =>
 						updatePost({
-							tags: event.target.value
-								.split(",")
-								.map((tag) => tag.trim())
-								.filter(Boolean),
+							tags: event.target.value.split(","),
 						})
 					}
 				/>
@@ -422,6 +472,13 @@ const PostEditor = memo(function PostEditor({
 						}
 					>
 						+ List
+					</SmallButton>
+					<SmallButton
+						onClick={() =>
+							updatePost({ content: [...post.content, newBlock("code")] })
+						}
+					>
+						+ Code Block
 					</SmallButton>
 				</div>
 
@@ -547,6 +604,33 @@ const PostEditor = memo(function PostEditor({
 										}
 									/>
 								</>
+							)}
+
+							{block.type === "code" && (
+								<div className="grid gap-2">
+									<Input
+										placeholder="Language (contoh: bash, ts, js)"
+										value={block.language ?? ""}
+										onChange={(event) =>
+											updateBlock(blockIndex, {
+												...block,
+												language: event.target.value,
+											})
+										}
+									/>
+									<Textarea
+										rows={8}
+										// placeholder={"lucu lucu miaww\n# catcatcat\nnyaaa~~~"}
+										value={block.code}
+										onChange={(event) =>
+											updateBlock(blockIndex, {
+												...block,
+												code: event.target.value,
+											})
+										}
+										style={{ fontFamily: "monospace", lineHeight: 1.6 }}
+									/>
+								</div>
 							)}
 
 							{block.type === "list" && (

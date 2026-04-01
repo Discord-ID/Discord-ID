@@ -42,6 +42,7 @@ function renderContentBlock(block: BlogContentBlock, index: number) {
 					fontSize: 15,
 					lineHeight: 1.8,
 					color: "rgba(245,245,247,0.72)",
+					whiteSpace: "pre-wrap",
 				}}
 			>
 				{block.text}
@@ -101,6 +102,7 @@ function renderContentBlock(block: BlogContentBlock, index: number) {
 						lineHeight: 1.75,
 						color: "rgba(245,245,247,0.85)",
 						margin: 0,
+						whiteSpace: "pre-wrap",
 					}}
 				>
 					“{block.text}”
@@ -119,6 +121,46 @@ function renderContentBlock(block: BlogContentBlock, index: number) {
 					</cite>
 				) : null}
 			</blockquote>
+		);
+	}
+
+	if (block.type === "code") {
+		return (
+			<div
+				key={`${block.type}-${index}`}
+				style={{
+					borderRadius: 12,
+					border: "1px solid rgba(255,255,255,0.1)",
+					background: "rgba(0,0,0,0.35)",
+					overflow: "hidden",
+				}}
+			>
+				<div
+					style={{
+						padding: "8px 12px",
+						fontSize: 12,
+						fontWeight: 700,
+						color: "rgba(245,245,247,0.55)",
+						borderBottom: "1px solid rgba(255,255,255,0.08)",
+						textTransform: "lowercase",
+					}}
+				>
+					{block.language || "text"}
+				</div>
+				<pre
+					style={{
+						margin: 0,
+						padding: "14px 16px",
+						fontSize: 13,
+						lineHeight: 1.65,
+						color: "#f5f5f7",
+						whiteSpace: "pre-wrap",
+						overflowX: "auto",
+					}}
+				>
+					<code>{block.code}</code>
+				</pre>
+			</div>
 		);
 	}
 

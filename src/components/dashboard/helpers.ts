@@ -60,14 +60,13 @@ export function newBlock(type: BlogContentBlock["type"]): BlogContentBlock {
 	if (type === "image")
 		return { id, type: "image", src: "", alt: "", caption: "" };
 	if (type === "quote") return { id, type: "quote", text: "", cite: "" };
+	if (type === "code") return { id, type: "code", language: "bash", code: "" };
 	return { id, type: "list", ordered: false, items: [""] };
 }
 
 export function parseItems(value: string) {
-	return value
-		.split("\n")
-		.map((entry) => entry.trim())
-		.filter(Boolean);
+	// Keep raw spacing/newlines while typing; sanitize later on save/render if needed.
+	return value.split("\n");
 }
 
 export function itemsToText(items: string[]) {

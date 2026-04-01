@@ -36,6 +36,11 @@ export type BlogContentBlock =
 			cite?: string;
 	  } & BlogContentBlockBase)
 	| ({
+			type: "code";
+			language?: string;
+			code: string;
+	  } & BlogContentBlockBase)
+	| ({
 			type: "list";
 			ordered?: boolean;
 			items: string[];
