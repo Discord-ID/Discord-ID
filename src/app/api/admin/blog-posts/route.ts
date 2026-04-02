@@ -39,8 +39,8 @@ function isBlogPost(post: unknown): post is BlogPost {
 		typeof maybe.excerpt === "string" &&
 		typeof maybe.publishedAt === "string" &&
 		typeof maybe.author === "string" &&
-		Array.isArray(maybe.tags) &&
-		Array.isArray(maybe.content)
+		typeof maybe.markdown === "string" &&
+		Array.isArray(maybe.tags)
 	);
 }
 

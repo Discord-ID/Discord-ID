@@ -54,7 +54,7 @@ function blogPostToRow(post: BlogPost) {
 		author: post.author,
 		authorAdminId: post.authorAdminId ?? null,
 		tagsJson: JSON.stringify(post.tags),
-		contentJson: JSON.stringify(post.content),
+		contentJson: post.markdown,
 		coverImageJson: post.coverImage ? JSON.stringify(post.coverImage) : null,
 		sourceUrl: post.sourceUrl ?? null,
 		updatedAt: new Date(),
@@ -83,7 +83,7 @@ function rowToBlogPost(row: {
 		author: row.author,
 		authorAdminId: row.authorAdminId ?? undefined,
 		tags: parseJson<string[]>(row.tagsJson),
-		content: parseJson(row.contentJson),
+		markdown: row.contentJson,
 		coverImage: row.coverImageJson ? parseJson(row.coverImageJson) : undefined,
 		sourceUrl: row.sourceUrl ?? undefined,
 	};
@@ -246,7 +246,7 @@ export async function getSiteContent() {
 	// if not present, return empty default and optionally create an empty record
 	const empty: SiteContent = { liveCommunityFeed: [] };
 	await dbClient
-		.insert(siteContentTable)
+	    .insert(siteContentTable)
 		.values(siteContentToRow(empty))
 		.onConflictDoNothing();
 	return empty;
@@ -276,12 +276,8 @@ export async function getBlogPosts() {
 		.from(blogPostsTable)
 		.orderBy(desc(blogPostsTable.publishedAt));
 
-	if (rows.length > 0) {
-		return rows.map(rowToBlogPost);
-	}
-
 	// no posts yet – return empty array
-	return [];
+	return rows.length > 0 ? rows.map(rowToBlogPost) : [];
 }
 
 export async function getBlogPostBySlug(slug: string) {
@@ -359,9 +355,9 @@ export async function getUserRoleByDiscordId(discordId: string) {
 	}
 
 	return row.role === "dev"
-		? "dev"
+	    ? "dev"
 		: row.role === "admin"
-			? "admin"
+		    ? "admin"
 			: "moderator";
 }
 
@@ -482,7 +478,7 @@ export async function deletePrivilegedUserByDiscordId(discordId: string) {
 	}
 
 	await dbClient
-		.delete(adminUsersTable)
+	    .delete(adminUsersTable)
 		.where(eq(adminUsersTable.discordId, discordId));
 
 	return rowToAdminProfile(existing);
@@ -491,7 +487,7 @@ export async function deletePrivilegedUserByDiscordId(discordId: string) {
 export async function resetPrivilegedUserNameToDefault(discordId: string) {
 	const dbClient = getDbOrThrow();
 	await ensureDbReady();
-
+	
 	const existing = await dbClient.query.adminUsersTable.findFirst({
 		where: eq(adminUsersTable.discordId, discordId),
 	});
@@ -513,5 +509,5 @@ export async function resetPrivilegedUserNameToDefault(discordId: string) {
 		})
 		.where(eq(adminUsersTable.discordId, discordId));
 
-	return getAdminProfileByDiscordId(discordId);
+		return getAdminProfileByDiscordId(discordId);
 }

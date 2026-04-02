@@ -11,41 +11,6 @@ export type SiteContent = {
 	liveCommunityFeed: LiveFeedItem[];
 };
 
-type BlogContentBlockBase = {
-	id?: string;
-};
-
-export type BlogContentBlock =
-	| ({
-			type: "heading";
-			text: string;
-	  } & BlogContentBlockBase)
-	| ({
-			type: "paragraph";
-			text: string;
-	  } & BlogContentBlockBase)
-	| ({
-			type: "image";
-			src: string;
-			alt: string;
-			caption?: string;
-	  } & BlogContentBlockBase)
-	| ({
-			type: "quote";
-			text: string;
-			cite?: string;
-	  } & BlogContentBlockBase)
-	| ({
-			type: "code";
-			language?: string;
-			code: string;
-	  } & BlogContentBlockBase)
-	| ({
-			type: "list";
-			ordered?: boolean;
-			items: string[];
-	  } & BlogContentBlockBase);
-
 export type BlogPost = {
 	slug: string;
 	title: string;
@@ -60,7 +25,7 @@ export type BlogPost = {
 		alt: string;
 	};
 	sourceUrl?: string;
-	content: BlogContentBlock[];
+	markdown: string;
 };
 
 export type AdminProfile = {

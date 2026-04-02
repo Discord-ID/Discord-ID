@@ -84,7 +84,7 @@ export function DashboardEditor() {
 								alt: post.coverImage?.alt?.trim() ?? "",
 							}
 						: undefined,
-				content: post.content,
+				content: post.markdown,
 			}));
 			const response = await fetch("/api/admin/blog-posts", {
 				method: "PUT",

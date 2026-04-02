@@ -3,13 +3,9 @@ import {
 	getBlogPostBySlug,
 	getBlogPosts,
 } from "@/lib/content-store";
-import type {
-	AdminProfile,
-	BlogContentBlock,
-	BlogPost,
-} from "@/lib/content-types";
+import type { AdminProfile, BlogPost } from "@/lib/content-types";
 
-export type { AdminProfile, BlogContentBlock, BlogPost };
+export type { AdminProfile, BlogPost };
 
 const DEFAULT_BLOG_COVERS = [
 	"/blog/cover-age-assurance.svg",
