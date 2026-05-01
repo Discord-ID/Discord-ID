@@ -2,6 +2,7 @@ import { desc, eq, inArray, sql } from "drizzle-orm";
 import type {
 	AdminProfile,
 	BlogPost,
+	ServerInfoRoleEntry,
 	SiteContent,
 	UserRole,
 } from "@/lib/content-types";
@@ -30,17 +31,81 @@ function parseJson<T>(value: string): T {
 	return JSON.parse(value) as T;
 }
 
+function normalizeServerInfoRoles(
+	entries: ServerInfoRoleEntry[] | undefined,
+): ServerInfoRoleEntry[] {
+	if (!Array.isArray(entries)) return [];
+	const seen = new Set<string>();
+	const out: ServerInfoRoleEntry[] = [];
+	for (const e of entries) {
+		const roleId = typeof e.roleId === "string" ? e.roleId.trim() : "";
+		if (!roleId || seen.has(roleId)) continue;
+		seen.add(roleId);
+		const desc = typeof e.description === "string" ? e.description.trim() : "";
+		out.push(desc ? { roleId, description: desc } : { roleId });
+	}
+	return out;
+}
+
+function deserializeSiteMeta(
+	raw: string | null | undefined,
+): ServerInfoRoleEntry[] {
+	if (!raw?.trim()) return [];
+	try {
+		const obj = parseJson<{
+			serverInfoRoles?: unknown;
+			serverInfoVisibleRoleIds?: unknown;
+		}>(raw);
+		if (Array.isArray(obj.serverInfoRoles)) {
+			const raw: ServerInfoRoleEntry[] = [];
+			for (const item of obj.serverInfoRoles) {
+				if (!item || typeof item !== "object") continue;
+				const r = item as Record<string, unknown>;
+				const roleId = typeof r.roleId === "string" ? r.roleId.trim() : "";
+				if (!roleId) continue;
+				const descRaw = r.description;
+				const description =
+					typeof descRaw === "string" ? descRaw.trim() : undefined;
+				raw.push(description ? { roleId, description } : { roleId });
+			}
+			return normalizeServerInfoRoles(raw);
+		}
+		const ids = obj.serverInfoVisibleRoleIds;
+		if (!Array.isArray(ids)) return [];
+		const legacyIds = [
+			...new Set(
+				ids.filter(
+					(id): id is string => typeof id === "string" && id.trim().length > 0,
+				),
+			),
+		];
+		return legacyIds.map((roleId) => ({ roleId }));
+	} catch {
+		return [];
+	}
+}
+
+function serializeSiteMeta(next: SiteContent): string {
+	const roles = normalizeServerInfoRoles(next.serverInfoRoles);
+	return JSON.stringify({ serverInfoRoles: roles });
+}
+
 function siteContentToRow(next: SiteContent) {
 	return {
 		key: DEFAULT_SITE_CONTENT_KEY,
 		liveCommunityFeedJson: JSON.stringify(next.liveCommunityFeed),
+		siteMetaJson: serializeSiteMeta(next),
 		updatedAt: new Date(),
 	};
 }
 
-function rowToSiteContent(row: { liveCommunityFeedJson: string }): SiteContent {
+function rowToSiteContent(row: {
+	liveCommunityFeedJson: string;
+	siteMetaJson?: string | null;
+}): SiteContent {
 	return {
 		liveCommunityFeed: parseJson(row.liveCommunityFeedJson),
+		serverInfoRoles: deserializeSiteMeta(row.siteMetaJson ?? "{}"),
 	};
 }
 
@@ -187,6 +252,9 @@ async function ensureDbReady() {
 					updated_at INTEGER NOT NULL
 				)
 			`);
+			await safeRun(sql`
+				ALTER TABLE site_content ADD COLUMN site_meta_json TEXT NOT NULL DEFAULT '{}'
+			`);
 			await dbClient.run(sql`
 				CREATE TABLE IF NOT EXISTS blog_posts (
 					slug TEXT PRIMARY KEY NOT NULL,
@@ -244,9 +312,12 @@ export async function getSiteContent() {
 	}
 
 	// if not present, return empty default and optionally create an empty record
-	const empty: SiteContent = { liveCommunityFeed: [] };
+	const empty: SiteContent = {
+		liveCommunityFeed: [],
+		serverInfoRoles: [],
+	};
 	await dbClient
-	    .insert(siteContentTable)
+		.insert(siteContentTable)
 		.values(siteContentToRow(empty))
 		.onConflictDoNothing();
 	return empty;
@@ -255,17 +326,22 @@ export async function getSiteContent() {
 export async function updateSiteContent(next: SiteContent) {
 	const dbClient = getDbOrThrow();
 	await ensureDbReady();
+	const normalized: SiteContent = {
+		liveCommunityFeed: next.liveCommunityFeed,
+		serverInfoRoles: normalizeServerInfoRoles(next.serverInfoRoles),
+	};
 	await dbClient
 		.insert(siteContentTable)
-		.values(siteContentToRow(next))
+		.values(siteContentToRow(normalized))
 		.onConflictDoUpdate({
 			target: siteContentTable.key,
 			set: {
-				liveCommunityFeedJson: JSON.stringify(next.liveCommunityFeed),
+				liveCommunityFeedJson: JSON.stringify(normalized.liveCommunityFeed),
+				siteMetaJson: serializeSiteMeta(normalized),
 				updatedAt: new Date(),
 			},
 		});
-	return next;
+	return normalized;
 }
 
 export async function getBlogPosts() {
@@ -355,9 +431,9 @@ export async function getUserRoleByDiscordId(discordId: string) {
 	}
 
 	return row.role === "dev"
-	    ? "dev"
+		? "dev"
 		: row.role === "admin"
-		    ? "admin"
+			? "admin"
 			: "moderator";
 }
 
@@ -478,7 +554,7 @@ export async function deletePrivilegedUserByDiscordId(discordId: string) {
 	}
 
 	await dbClient
-	    .delete(adminUsersTable)
+		.delete(adminUsersTable)
 		.where(eq(adminUsersTable.discordId, discordId));
 
 	return rowToAdminProfile(existing);
@@ -487,7 +563,7 @@ export async function deletePrivilegedUserByDiscordId(discordId: string) {
 export async function resetPrivilegedUserNameToDefault(discordId: string) {
 	const dbClient = getDbOrThrow();
 	await ensureDbReady();
-	
+
 	const existing = await dbClient.query.adminUsersTable.findFirst({
 		where: eq(adminUsersTable.discordId, discordId),
 	});
@@ -509,5 +585,5 @@ export async function resetPrivilegedUserNameToDefault(discordId: string) {
 		})
 		.where(eq(adminUsersTable.discordId, discordId));
 
-		return getAdminProfileByDiscordId(discordId);
+	return getAdminProfileByDiscordId(discordId);
 }

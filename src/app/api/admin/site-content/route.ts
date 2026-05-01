@@ -28,12 +28,26 @@ function isValidSiteContent(payload: unknown): payload is SiteContent {
 	if (!payload || typeof payload !== "object") return false;
 	const maybe = payload as SiteContent;
 	if (!Array.isArray(maybe.liveCommunityFeed)) return false;
-	return maybe.liveCommunityFeed.every(
+	const feedOk = maybe.liveCommunityFeed.every(
 		(item) =>
 			typeof item.tag === "string" &&
 			typeof item.color === "string" &&
 			typeof item.text === "string",
 	);
+	if (!feedOk) return false;
+	if (maybe.serverInfoRoles !== undefined) {
+		if (maybe.serverInfoRoles === null || !Array.isArray(maybe.serverInfoRoles))
+			return false;
+		for (const item of maybe.serverInfoRoles) {
+			if (!item || typeof item !== "object") return false;
+			const r = item as { roleId?: unknown; description?: unknown };
+			if (typeof r.roleId !== "string") return false;
+			if (r.description !== undefined && typeof r.description !== "string") {
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 export async function GET() {
@@ -63,7 +77,15 @@ export async function PUT(request: Request) {
 				{ status: 400 },
 			);
 		}
-		const updated = await updateSiteContent(payload);
+		const body = payload as SiteContent;
+		const existing = await getSiteContent();
+		const merged: SiteContent = {
+			liveCommunityFeed: body.liveCommunityFeed,
+			serverInfoRoles: Array.isArray(body.serverInfoRoles)
+				? body.serverInfoRoles
+				: (existing.serverInfoRoles ?? []),
+		};
+		const updated = await updateSiteContent(merged);
 		const session = await getServerSession(authOptions);
 		const userId = session?.user?.id ?? "?";
 		await discordLog(`SITE_CONTENT_UPDATE by ${userId}`);

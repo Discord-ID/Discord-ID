@@ -81,10 +81,12 @@ export function SectionCard({
 	actions,
 	children,
 }: {
-	title: string;
+	title?: string;
 	actions?: ReactNode;
 	children: ReactNode;
 }) {
+	const showHead = Boolean(title ?? actions);
+
 	return (
 		<section
 			style={{
@@ -94,10 +96,16 @@ export function SectionCard({
 				background: "rgba(255,255,255,0.03)",
 			}}
 		>
-			<div className="mb-3 flex flex-wrap items-center gap-2">
-				<h2 style={{ fontSize: 18, fontWeight: 700 }}>{title}</h2>
-				{actions}
-			</div>
+			{showHead ? (
+				<div className="mb-3 flex flex-wrap items-center gap-2">
+					{title ? (
+						<h2 style={{ fontSize: 18, fontWeight: 700 }}>{title}</h2>
+					) : (
+						<span className="min-w-[1px] flex-1 basis-[120px]" />
+					)}
+					{actions}
+				</div>
+			) : null}
 			{children}
 		</section>
 	);

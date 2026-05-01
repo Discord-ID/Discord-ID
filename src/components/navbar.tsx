@@ -19,6 +19,7 @@ const navItems = [
 	// { label: "FAQ", href: "/#faq" },
 	{ label: "Blog", href: "/blog" },
 	{ label: "Staff", href: "/staff" },
+	{ label: "Server Info", href: "/server-info" },
 ];
 
 function UserAvatar({

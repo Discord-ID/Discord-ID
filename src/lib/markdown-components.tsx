@@ -1,4 +1,14 @@
+import Image from "next/image";
 import type { Components } from "react-markdown";
+
+/** Optimizer can't handle these; still uses Next `<Image>` to satisfy lint & defaults. */
+function markdownImageUnoptimized(src: string): boolean {
+	return (
+		src.startsWith("data:") ||
+		src.startsWith("blob:") ||
+		src.startsWith("http://")
+	);
+}
 
 export const markdownComponents: Components = {
 	h1: ({ children }) => (
@@ -100,7 +110,11 @@ export const markdownComponents: Components = {
 			href={href}
 			target="_blank"
 			rel="noreferrer"
-			style={{ color: "#ef4444", textDecoration: "underline", textUnderlineOffset: 3 }}
+			style={{
+				color: "#ef4444",
+				textDecoration: "underline",
+				textUnderlineOffset: 3,
+			}}
 		>
 			{children}
 		</a>
@@ -109,10 +123,19 @@ export const markdownComponents: Components = {
 		<strong style={{ color: "#f5f5f7", fontWeight: 700 }}>{children}</strong>
 	),
 	em: ({ children }) => (
-		<em style={{ color: "rgba(245,245,247,0.88)", fontStyle: "italic" }}>{children}</em>
+		<em style={{ color: "rgba(245,245,247,0.88)", fontStyle: "italic" }}>
+			{children}
+		</em>
 	),
 	del: ({ children }) => (
-		<del style={{ color: "rgba(245,245,247,0.45)", textDecoration: "line-through" }}>{children}</del>
+		<del
+			style={{
+				color: "rgba(245,245,247,0.45)",
+				textDecoration: "line-through",
+			}}
+		>
+			{children}
+		</del>
 	),
 	blockquote: ({ children }) => (
 		<blockquote
@@ -131,7 +154,10 @@ export const markdownComponents: Components = {
 		</blockquote>
 	),
 	pre: ({ children }) => {
-		const child = children as React.ReactElement<{ className?: string; children?: string }>;
+		const child = children as React.ReactElement<{
+			className?: string;
+			children?: string;
+		}>;
 		const className = child?.props?.className ?? "";
 		const lang = className.replace("language-", "") || "text";
 		const code = child?.props?.children ?? "";
@@ -229,33 +255,42 @@ export const markdownComponents: Components = {
 			}}
 		/>
 	),
-	img: ({ src, alt }) => (
-		<figure style={{ margin: "18px 0" }}>
-			<img
-				src={src}
-				alt={alt ?? ""}
-				style={{
-					display: "block",
-					width: "100%",
-					height: "auto",
-					borderRadius: 12,
-					border: "1px solid rgba(255,255,255,0.08)",
-				}}
-			/>
-			{alt ? (
-				<figcaption
+	img: ({ src, alt }) => {
+		const safeSrc = typeof src === "string" ? src.trim() : "";
+		if (!safeSrc) return null;
+		const caption = alt ?? "";
+		return (
+			<figure style={{ margin: "18px 0" }}>
+				<Image
+					src={safeSrc}
+					alt={caption}
+					width={1600}
+					height={1200}
+					sizes="(max-width: 896px) 100vw, 896px"
+					unoptimized={markdownImageUnoptimized(safeSrc)}
 					style={{
-						fontSize: 12,
-						color: "rgba(245,245,247,0.45)",
-						marginTop: 8,
-						textAlign: "center",
+						display: "block",
+						width: "100%",
+						height: "auto",
+						borderRadius: 12,
+						border: "1px solid rgba(255,255,255,0.08)",
 					}}
-				>
-					{alt}
-				</figcaption>
-			) : null}
-		</figure>
-	),
+				/>
+				{caption ? (
+					<figcaption
+						style={{
+							fontSize: 12,
+							color: "rgba(245,245,247,0.45)",
+							marginTop: 8,
+							textAlign: "center",
+						}}
+					>
+						{caption}
+					</figcaption>
+				) : null}
+			</figure>
+		);
+	},
 	table: ({ children }) => (
 		<div style={{ overflowX: "auto", margin: "16px 0" }}>
 			<table
@@ -311,16 +346,88 @@ export const markdownComponents: Components = {
 
 export const previewMarkdownComponents: Components = {
 	...markdownComponents,
-	h1: ({ children }) => <h1 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6, color: "#f5f5f7" }}>{children}</h1>,
-	h2: ({ children }) => <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 5, color: "#f5f5f7" }}>{children}</h2>,
-	h3: ({ children }) => <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, color: "#f5f5f7" }}>{children}</h3>,
-	p: ({ children }) => <p style={{ fontSize: 13, lineHeight: 1.75, color: "rgba(245,245,247,0.75)", margin: "0 0 10px" }}>{children}</p>,
-	ul: ({ children }) => <ul style={{ paddingLeft: 18, margin: "4px 0 10px", color: "rgba(245,245,247,0.75)", fontSize: 13, listStyleType: "disc" }}>{children}</ul>,
-	ol: ({ children }) => <ol style={{ paddingLeft: 18, margin: "4px 0 10px", color: "rgba(245,245,247,0.75)", fontSize: 13, listStyleType: "decimal" }}>{children}</ol>,
+	h1: ({ children }) => (
+		<h1
+			style={{
+				fontSize: 18,
+				fontWeight: 700,
+				marginBottom: 6,
+				color: "#f5f5f7",
+			}}
+		>
+			{children}
+		</h1>
+	),
+	h2: ({ children }) => (
+		<h2
+			style={{
+				fontSize: 16,
+				fontWeight: 700,
+				marginBottom: 5,
+				color: "#f5f5f7",
+			}}
+		>
+			{children}
+		</h2>
+	),
+	h3: ({ children }) => (
+		<h3
+			style={{
+				fontSize: 14,
+				fontWeight: 700,
+				marginBottom: 4,
+				color: "#f5f5f7",
+			}}
+		>
+			{children}
+		</h3>
+	),
+	p: ({ children }) => (
+		<p
+			style={{
+				fontSize: 13,
+				lineHeight: 1.75,
+				color: "rgba(245,245,247,0.75)",
+				margin: "0 0 10px",
+			}}
+		>
+			{children}
+		</p>
+	),
+	ul: ({ children }) => (
+		<ul
+			style={{
+				paddingLeft: 18,
+				margin: "4px 0 10px",
+				color: "rgba(245,245,247,0.75)",
+				fontSize: 13,
+				listStyleType: "disc",
+			}}
+		>
+			{children}
+		</ul>
+	),
+	ol: ({ children }) => (
+		<ol
+			style={{
+				paddingLeft: 18,
+				margin: "4px 0 10px",
+				color: "rgba(245,245,247,0.75)",
+				fontSize: 13,
+				listStyleType: "decimal",
+			}}
+		>
+			{children}
+		</ol>
+	),
 	li: ({ children }) => <li style={{ marginBottom: 3 }}>{children}</li>,
 	pre: ({ children }) => {
-		const child = children as React.ReactElement<{ className?: string; children?: string }>;
-		const lang = (child?.props?.className ?? "").replace("language-", "") || "text";
+		const child = children as React.ReactElement<{
+			className?: string;
+			children?: string;
+		}>;
+		const lang =
+			(child?.props?.className ?? "").replace("language-", "") || "text";
 		const code = child?.props?.children ?? "";
 		return (
 			<pre
@@ -337,7 +444,16 @@ export const previewMarkdownComponents: Components = {
 					whiteSpace: "pre-wrap",
 				}}
 			>
-				<span style={{ fontSize: 10, color: "rgba(245,245,247,0.35)", display: "block", marginBottom: 4 }}>{lang}</span>
+				<span
+					style={{
+						fontSize: 10,
+						color: "rgba(245,245,247,0.35)",
+						display: "block",
+						marginBottom: 4,
+					}}
+				>
+					{lang}
+				</span>
 				<code>{code}</code>
 			</pre>
 		);

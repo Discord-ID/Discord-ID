@@ -135,7 +135,7 @@ export function UserAccessManager({
 	}
 
 	return (
-		<SectionCard title="User Settings & Roles">
+		<SectionCard>
 			<div className="space-y-4">
 				<div
 					style={{

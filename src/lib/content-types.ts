@@ -7,8 +7,16 @@ export type LiveFeedItem = {
 
 export type UserRole = "dev" | "admin" | "moderator";
 
+/** Entry for `/server-info`: which guild roles appear and optional copy under the name. */
+export type ServerInfoRoleEntry = {
+	roleId: string;
+	description?: string;
+};
+
 export type SiteContent = {
 	liveCommunityFeed: LiveFeedItem[];
+	/** Order = display order. Omitted or empty = nothing shown on `/server-info`. */
+	serverInfoRoles?: ServerInfoRoleEntry[];
 };
 
 export type BlogPost = {

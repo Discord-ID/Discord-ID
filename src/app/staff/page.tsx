@@ -21,6 +21,7 @@ type StaffItem = {
 		roles: string[];
 		hasAdmin: boolean;
 		hasTeam: boolean;
+		hasFounder: boolean;
 	};
 	presence: {
 		status: StaffStatus;
@@ -43,6 +44,7 @@ type StaffPayload = {
 		admin: number;
 		team: number;
 		both: number;
+		founder: number;
 	};
 	staff: StaffItem[];
 };
@@ -82,6 +84,7 @@ const STATUS_STYLES: Record<
 };
 
 const STAFF_ROLE_DEFINITIONS = [
+	{ id: "__founder__", label: "Founder" },
 	{ id: "1419304702713266196", label: "Admin" },
 	{ id: "1447875381221920848", label: "Team" },
 	{ id: "1439631442589122662", label: "Moderator" },
@@ -93,18 +96,35 @@ const STAFF_ROLE_DEFINITIONS = [
 ] as const;
 
 function getMatchedRoleLabels(staff: StaffItem) {
+	const labels: string[] = [];
+	if (staff.member.hasFounder) {
+		labels.push("Founder");
+	}
 	const roleIds = new Set(staff.member.roles ?? []);
-	return STAFF_ROLE_DEFINITIONS.filter((role) => roleIds.has(role.id)).map(
-		(role) => role.label,
-	);
+	for (const role of STAFF_ROLE_DEFINITIONS) {
+		if (role.id === "__founder__") continue;
+		if (roleIds.has(role.id)) {
+			labels.push(role.label);
+		}
+	}
+	return labels;
 }
 
 function getPrimaryGroupLabel(staff: StaffItem) {
+	if (staff.member.hasFounder) return "Founder";
 	const matchedLabels = getMatchedRoleLabels(staff);
 	return matchedLabels[0] ?? "Lainnya";
 }
 
 function roleBadgeStyle(label: string) {
+	if (label === "Founder") {
+		return {
+			color: "#f59e0b",
+			border: "1px solid rgba(245,158,11,0.4)",
+			background: "rgba(245,158,11,0.14)",
+		};
+	}
+
 	if (label === "Admin") {
 		return {
 			color: "#fca5a5",
@@ -141,6 +161,7 @@ function statusLabel(status: StaffStatus) {
 }
 
 function summaryLabelStyle(label: string) {
+	if (label === "Founder") return "#f59e0b";
 	if (label === "Online") return "#22c55e";
 	if (label === "Idle") return "#f59e0b";
 	if (label === "DND") return "#ef4444";
@@ -201,25 +222,25 @@ export default function StaffPage() {
 		if (!data) return [];
 		return [
 			{ label: "Total Staff", value: data.summary.total },
+			{ label: "Founder", value: data.summary.founder },
 			{ label: "Online", value: data.summary.online },
 			{ label: "Idle", value: data.summary.idle },
 			{ label: "DND", value: data.summary.dnd },
 			{ label: "Offline", value: data.summary.offline },
 			{ label: "Admin", value: data.summary.admin },
 			{ label: "Team", value: data.summary.team },
-			{ label: "Admin + Team", value: data.summary.both },
 		];
 	}, [data]);
 
 	const loadingSummaryKeys = [
 		"total",
+		"founder",
 		"online",
 		"idle",
 		"dnd",
 		"offline",
 		"admin",
 		"team",
-		"both",
 	];
 
 	const groupedStaff = useMemo(() => {

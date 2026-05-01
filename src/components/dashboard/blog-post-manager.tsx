@@ -28,13 +28,22 @@ function normalizeSlugInput(value: string) {
 function MarkdownPreview({ markdown }: { markdown: string }) {
 	if (!markdown.trim()) {
 		return (
-			<span style={{ color: "rgba(245,245,247,0.3)", fontStyle: "italic", fontSize: 13 }}>
+			<span
+				style={{
+					color: "rgba(245,245,247,0.3)",
+					fontStyle: "italic",
+					fontSize: 13,
+				}}
+			>
 				Belum ada konten...
 			</span>
 		);
 	}
 	return (
-		<ReactMarkdown remarkPlugins={[remarkGfm]} components={previewMarkdownComponents}>
+		<ReactMarkdown
+			remarkPlugins={[remarkGfm]}
+			components={previewMarkdownComponents}
+		>
 			{markdown}
 		</ReactMarkdown>
 	);
@@ -93,7 +102,9 @@ const PostEditor = memo(function PostEditor({
 				<select
 					value={post.status === "draft" ? "draft" : "published"}
 					onChange={(e) =>
-						updatePost({ status: e.target.value === "draft" ? "draft" : "published" })
+						updatePost({
+							status: e.target.value === "draft" ? "draft" : "published",
+						})
 					}
 					style={{
 						width: "100%",
@@ -117,7 +128,9 @@ const PostEditor = memo(function PostEditor({
 				<Input
 					placeholder="Slug"
 					value={post.slug}
-					onChange={(e) => updatePost({ slug: normalizeSlugInput(e.target.value) })}
+					onChange={(e) =>
+						updatePost({ slug: normalizeSlugInput(e.target.value) })
+					}
 					style={{ gridColumn: "1 / -1" }}
 				/>
 				<Input
@@ -141,7 +154,9 @@ const PostEditor = memo(function PostEditor({
 				<Input
 					placeholder="Admin ID"
 					value={post.authorAdminId ?? ""}
-					onChange={(e) => updatePost({ authorAdminId: e.target.value || undefined })}
+					onChange={(e) =>
+						updatePost({ authorAdminId: e.target.value || undefined })
+					}
 				/>
 				<SmallButton
 					onClick={() =>
@@ -164,7 +179,12 @@ const PostEditor = memo(function PostEditor({
 					placeholder="Cover URL"
 					value={post.coverImage?.src ?? ""}
 					onChange={(e) =>
-						updatePost({ coverImage: { src: e.target.value, alt: post.coverImage?.alt ?? "" } })
+						updatePost({
+							coverImage: {
+								src: e.target.value,
+								alt: post.coverImage?.alt ?? "",
+							},
+						})
 					}
 					style={{ gridColumn: "1 / -1" }}
 				/>
@@ -172,7 +192,12 @@ const PostEditor = memo(function PostEditor({
 					placeholder="Cover Alt"
 					value={post.coverImage?.alt ?? ""}
 					onChange={(e) =>
-						updatePost({ coverImage: { src: post.coverImage?.src ?? "", alt: e.target.value } })
+						updatePost({
+							coverImage: {
+								src: post.coverImage?.src ?? "",
+								alt: e.target.value,
+							},
+						})
 					}
 					style={{ gridColumn: "1 / -1" }}
 				/>
@@ -193,16 +218,36 @@ const PostEditor = memo(function PostEditor({
 				}}
 			>
 				<div className="mb-3 flex items-center gap-2">
-					<span style={{ fontSize: 12, color: "rgba(245,245,247,0.5)", marginRight: 4 }}>
+					<span
+						style={{
+							fontSize: 12,
+							color: "rgba(245,245,247,0.5)",
+							marginRight: 4,
+						}}
+					>
 						Konten
 					</span>
-					<button type="button" style={tabStyle(tab === "edit")} onClick={() => setTab("edit")}>
+					<button
+						type="button"
+						style={tabStyle(tab === "edit")}
+						onClick={() => setTab("edit")}
+					>
 						Edit
 					</button>
-					<button type="button" style={tabStyle(tab === "preview")} onClick={() => setTab("preview")}>
+					<button
+						type="button"
+						style={tabStyle(tab === "preview")}
+						onClick={() => setTab("preview")}
+					>
 						Preview
 					</button>
-					<span style={{ fontSize: 11, color: "rgba(245,245,247,0.3)", marginLeft: "auto" }}>
+					<span
+						style={{
+							fontSize: 11,
+							color: "rgba(245,245,247,0.3)",
+							marginLeft: "auto",
+						}}
+					>
 						Markdown
 					</span>
 				</div>
@@ -213,7 +258,11 @@ const PostEditor = memo(function PostEditor({
 						placeholder={`# Judul Section\n\nParagraf biasa, **bold**, *italic*, ~~coret~~\n\n## Subheading\n\n- item list\n- item lain\n\n1. nomor satu\n2. nomor dua\n\n> blockquote\n\n\`\`\`js\nconsole.log("code block")\n\`\`\`\n\n| Kolom 1 | Kolom 2 |\n|---------|----------|\n| data    | data     |`}
 						value={post.markdown}
 						onChange={(e) => updatePost({ markdown: e.target.value })}
-						style={{ fontFamily: "ui-monospace, monospace", lineHeight: 1.65, fontSize: 13 }}
+						style={{
+							fontFamily: "ui-monospace, monospace",
+							lineHeight: 1.65,
+							fontSize: 13,
+						}}
 					/>
 				) : (
 					<div
@@ -251,8 +300,10 @@ export function BlogPostManager({
 
 	const filteredEntries = useMemo(() => {
 		const entries = posts.map((post, index) => ({ post, index }));
-		if (filter === "draft") return entries.filter(({ post }) => post.status === "draft");
-		if (filter === "published") return entries.filter(({ post }) => post.status !== "draft");
+		if (filter === "draft")
+			return entries.filter(({ post }) => post.status === "draft");
+		if (filter === "published")
+			return entries.filter(({ post }) => post.status !== "draft");
 		return entries;
 	}, [posts, filter]);
 
@@ -281,7 +332,9 @@ export function BlogPostManager({
 
 	const handlePostChange = useCallback(
 		(updatedPost: BlogPost) => {
-			onChange(posts.map((p, i) => (i === selectedEntryIndex ? updatedPost : p)));
+			onChange(
+				posts.map((p, i) => (i === selectedEntryIndex ? updatedPost : p)),
+			);
 		},
 		[onChange, posts, selectedEntryIndex],
 	);
@@ -294,7 +347,6 @@ export function BlogPostManager({
 
 	return (
 		<SectionCard
-			title="Blog Home"
 			actions={
 				<>
 					<SmallButton onClick={createPost}>+ Buat Post Baru</SmallButton>
@@ -311,7 +363,9 @@ export function BlogPostManager({
 		>
 			<div className="mb-3 flex flex-wrap gap-2">
 				<SmallButton onClick={() => setFilter("all")}>Semua</SmallButton>
-				<SmallButton onClick={() => setFilter("published")}>Published</SmallButton>
+				<SmallButton onClick={() => setFilter("published")}>
+					Published
+				</SmallButton>
 				<SmallButton onClick={() => setFilter("draft")}>Draft</SmallButton>
 			</div>
 
@@ -324,7 +378,13 @@ export function BlogPostManager({
 						background: "rgba(255,255,255,0.02)",
 					}}
 				>
-					<p style={{ fontSize: 12, color: "rgba(245,245,247,0.65)", marginBottom: 10 }}>
+					<p
+						style={{
+							fontSize: 12,
+							color: "rgba(245,245,247,0.65)",
+							marginBottom: 10,
+						}}
+					>
 						Pilih post yang mau diedit
 					</p>
 					<div className="space-y-2">
@@ -344,7 +404,9 @@ export function BlogPostManager({
 											border: active
 												? "1px solid rgba(239,68,68,0.45)"
 												: "1px solid rgba(255,255,255,0.08)",
-											background: active ? "rgba(239,68,68,0.18)" : "rgba(255,255,255,0.02)",
+											background: active
+												? "rgba(239,68,68,0.18)"
+												: "rgba(255,255,255,0.02)",
 											color: "#f5f5f7",
 											cursor: "pointer",
 										}}

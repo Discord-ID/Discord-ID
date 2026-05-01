@@ -34,7 +34,6 @@ export function LiveFeedEditor({
 
 	return (
 		<SectionCard
-			title="Live Community Feed"
 			actions={
 				<>
 					<SmallButton
@@ -48,7 +47,7 @@ export function LiveFeedEditor({
 						className="btn-red"
 						style={{ padding: "8px 14px", fontSize: 13, fontWeight: 700 }}
 					>
-						Simpan Feed
+						Simpan
 					</button>
 				</>
 			}

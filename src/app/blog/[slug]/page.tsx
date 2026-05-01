@@ -19,7 +19,9 @@ const dateFormatter = new Intl.DateTimeFormat("id-ID", {
 	year: "numeric",
 });
 
-export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
+export async function generateMetadata({
+	params,
+}: PostPageProps): Promise<Metadata> {
 	const { slug } = await params;
 	const post = await getPostBySlug(slug);
 	if (!post) return { title: "Post tidak ditemukan | Discord ID Blog" };
@@ -48,7 +50,9 @@ export default async function BlogPostPage({ params }: PostPageProps) {
 	if (!post) notFound();
 
 	const authorProfiles = await getAuthorProfilesForPosts([post]);
-	const authorProfile = post.authorAdminId ? authorProfiles[post.authorAdminId] : undefined;
+	const authorProfile = post.authorAdminId
+		? authorProfiles[post.authorAdminId]
+		: undefined;
 
 	return (
 		<main
@@ -152,7 +156,10 @@ export default async function BlogPostPage({ params }: PostPageProps) {
 						padding: "28px 24px",
 					}}
 				>
-					<ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+					<ReactMarkdown
+						remarkPlugins={[remarkGfm]}
+						components={markdownComponents}
+					>
 						{post.markdown}
 					</ReactMarkdown>
 
